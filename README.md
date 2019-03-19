@@ -18,7 +18,32 @@ go get -u github.com/martinohmann/godog-http
 Usage
 -----
 
-Check [`feature_context_test.go`](feature_context_test.go) and the [`features/`](features/) for usage examples.
+Example feature:
+
+```
+Feature: As a developer, I want to be able to setup and verify http routers in
+  godog features.
+
+  Scenario: I make a JSON request
+
+    Given I have following request headers:
+      | X-Auth | supersecret |
+    And I have following request body:
+      """
+      {"foo":{"bar":{"baz":1}},"something":"else"}
+      """
+    When I send "POST" request to "/foo"
+    Then the response code should be 200
+    And the response should contain following json:
+      """
+      {"something":"else","foo":{"bar":{"baz":1}}}
+      """
+    And the response should have following headers:
+      | Content-Type | application/json |
+```
+
+Check [`feature_context_test.go`](feature_context_test.go) and the
+[`features/`](features/) directory for more usage examples.
 
 License
 -------

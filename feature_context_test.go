@@ -49,9 +49,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestMain(m *testing.M) {
-	c := godoghttp.NewFeatureContext(http.HandlerFunc(handler))
-
-	status := godog.RunWithOptions("godog", c.Register, godog.Options{
+	status := godog.RunWithOptions("godog", func(s *godog.Suite) {
+		c := godoghttp.NewFeatureContext(http.HandlerFunc(handler))
+		c.Register(s)
+	}, godog.Options{
 		Format: "progress",
 		Paths:  []string{"features"},
 	})
