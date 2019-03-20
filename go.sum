@@ -1,6 +1,14 @@
 github.com/DATA-DOG/godog v0.7.13 h1:JmgpKcra7Vf3yzI9vPsWyoQRx13tyKziHtXWDCUUgok=
 github.com/DATA-DOG/godog v0.7.13/go.mod h1:z2OZ6a3X0/YAKVqLfVzYBwFt3j6uSt3Xrqa7XTtcQE0=
+github.com/jinzhu/copier v0.0.0-20180308034124-7e38e58719c3 h1:sHsPfNMAG70QAvKbddQ0uScZCHQoZsT5NykGRCeeeIs=
+github.com/jinzhu/copier v0.0.0-20180308034124-7e38e58719c3/go.mod h1:yL958EeXv8Ylng6IfnvG4oflryUi3vgA3xPs9hmII1s=
+github.com/martinohmann/godog-helpers v0.0.1 h1:aWR6FFMD+EMhe0NjQUkCdWjakw9CO+h864dd8O05LR0=
+github.com/martinohmann/godog-helpers v0.0.1/go.mod h1:00a9/dQrj35A/mCovoOdw2YgivGoqd/6V6Vw2yBWzjw=
+github.com/martinohmann/godog-helpers v0.0.2-0.20190320185959-b465220a09f1 h1:hLPl3jHYzuo79G+gigMsFub8Oy/KiHPn2EdVZ5+VMO4=
+github.com/martinohmann/godog-helpers v0.0.2-0.20190320185959-b465220a09f1/go.mod h1:00a9/dQrj35A/mCovoOdw2YgivGoqd/6V6Vw2yBWzjw=
 github.com/martinohmann/jsoncompare v0.1.0 h1:kSmHv8vCLn23NJ9LcnsbhuiyPcb9tO/PTbcbZyOGx70=
 github.com/martinohmann/jsoncompare v0.1.0/go.mod h1:WHJPoo+vHj9MNmLriQnuGE6LP6wignJcTrLCWynjp2k=
+github.com/tidwall/pretty v0.0.0-20180105212114-65a9db5fad51 h1:BP2bjP495BBPaBcS5rmqviTfrOkN5rO5ceKAMRZCRFc=
+github.com/tidwall/pretty v0.0.0-20180105212114-65a9db5fad51/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 golang.org/x/arch v0.0.0-20190312162104-788fe5ffcd8c/go.mod h1:flIaEI6LNU6xOCD5PaJvn9wGP0agmIOqjrtsKGRguv4=
 rsc.io/pdf v0.1.1/go.mod h1:n8OzWcQ6Sp37PL01nO98y4iUCRdTGarVfzxY20ICaU4=

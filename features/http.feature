@@ -22,6 +22,7 @@ Feature: As a developer, I want to be able to setup and verify http routers in
   Scenario: Missing request body
 
     Given I have following request headers:
+      | name   | value       |
       | X-Auth | supersecret |
     When I send "POST" request to "/foo"
     Then the response code should be 400
@@ -33,6 +34,7 @@ Feature: As a developer, I want to be able to setup and verify http routers in
   Scenario: Invalid request body
 
     Given I have following request headers:
+      | name   | value       |
       | X-Auth | supersecret |
     And I have following request body:
       """
@@ -48,6 +50,7 @@ Feature: As a developer, I want to be able to setup and verify http routers in
   Scenario: Valid request body, exact response
 
     Given I have following request headers:
+      | name   | value       |
       | X-Auth | supersecret |
     And I have following request body:
       """
@@ -64,6 +67,7 @@ Feature: As a developer, I want to be able to setup and verify http routers in
   Scenario: Valid request body, JSON subtree match
 
     Given I have following request headers:
+      | name   | value       |
       | X-Auth | supersecret |
     And I have following request body:
       """
@@ -79,6 +83,7 @@ Feature: As a developer, I want to be able to setup and verify http routers in
   Scenario: Valid request body, exact JSON response, ignoring map order
 
     Given I have following request headers:
+      | name   | value       |
       | X-Auth | supersecret |
     And I have following request body:
       """
@@ -94,6 +99,7 @@ Feature: As a developer, I want to be able to setup and verify http routers in
   Scenario: Valid request body, response regex matching
 
     Given I have following request headers:
+      | name   | value       |
       | X-Auth | supersecret |
     And I have following request body:
       """
@@ -109,6 +115,7 @@ Feature: As a developer, I want to be able to setup and verify http routers in
   Scenario: Response header matching
 
     Given I have following request headers:
+      | name   | value       |
       | X-Auth | supersecret |
     And I have following request body:
       """
@@ -117,4 +124,20 @@ Feature: As a developer, I want to be able to setup and verify http routers in
     When I send "POST" request to "/foo"
     Then the response code should be 200
     And the response should have following headers:
+      | name         | value            |
       | Content-Type | application/json |
+
+  Scenario: Cookie matching
+
+    Given I have following request headers:
+      | name   | value       |
+      | X-Auth | supersecret |
+    And I have following request body:
+      """
+      {"foo":1}
+      """
+    When I send "POST" request to "/foo"
+    Then the response code should be 200
+    And the response should have following cookies:
+        | name | value |
+        | auth | 1     |

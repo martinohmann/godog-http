@@ -41,6 +41,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		http.SetCookie(w, &http.Cookie{Name: "auth", Value: "1"})
+
 		ok(w, data)
 		return
 	}

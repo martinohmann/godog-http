@@ -12,6 +12,7 @@ import (
 
 	"github.com/DATA-DOG/godog"
 	"github.com/DATA-DOG/godog/gherkin"
+	"github.com/martinohmann/godog-helpers/datatable"
 	"github.com/martinohmann/jsoncompare"
 )
 
@@ -21,6 +22,7 @@ type FeatureContext struct {
 	resp    *httptest.ResponseRecorder
 	body    io.Reader
 	header  http.Header
+	cookies []*http.Cookie
 }
 
 // NewFeatureContext creates a new FeatureContext. It expects a http.Handler
@@ -35,25 +37,57 @@ func (c *FeatureContext) beforeScenario(interface{}) {
 	c.resp = httptest.NewRecorder()
 	c.body = nil
 	c.header = nil
+	c.cookies = nil
 }
 
 // iHaveFollowingRequestHeaders sets headers for the next http.Request.
-func (c *FeatureContext) iHaveFollowingRequestHeaders(header *gherkin.DataTable) error {
-	for _, h := range header.Rows {
-		if len(h.Cells) != 2 {
-			return fmt.Errorf(
-				"expected header table row to have two columns (name, value), got %d",
-				len(h.Cells),
-			)
-		}
+func (c *FeatureContext) iHaveFollowingRequestHeaders(table *gherkin.DataTable) error {
+	options := &datatable.Options{
+		RequiredFields: []string{"name", "value"},
+	}
 
+	header, err := datatable.FromGherkinWithOptions(options, table)
+	if err != nil {
+		return err
+	}
+
+	for _, h := range header.Rows() {
 		if c.header == nil {
 			c.header = make(http.Header)
 		}
 
-		name, value := h.Cells[0].Value, h.Cells[1].Value
+		c.header[h["name"]] = []string{h["value"]}
+	}
 
-		c.header[name] = []string{value}
+	return nil
+}
+
+func (c *FeatureContext) iHaveFollowingRequestCookies(table *gherkin.DataTable) error {
+	options := &datatable.Options{
+		RequiredFields: []string{"name", "value"},
+		OptionalFields: []string{"path"},
+	}
+
+	cookies, err := datatable.FromGherkinWithOptions(options, table)
+	if err != nil {
+		return err
+	}
+
+	for _, cookieParams := range cookies.Rows() {
+		cookie := &http.Cookie{
+			Name:  cookieParams["name"],
+			Value: cookieParams["value"],
+		}
+
+		if path, ok := cookieParams["path"]; ok {
+			cookie.Path = path
+		}
+
+		if c.cookies == nil {
+			c.cookies = make([]*http.Cookie, 0)
+		}
+
+		c.cookies = append(c.cookies, cookie)
 	}
 
 	return nil
@@ -77,6 +111,10 @@ func (c *FeatureContext) iSendRequestTo(method string, url string) error {
 
 	if c.header != nil {
 		req.Header = c.header
+	}
+
+	for _, cookie := range c.cookies {
+		req.AddCookie(cookie)
 	}
 
 	c.handler.ServeHTTP(c.resp, req)
@@ -147,21 +185,61 @@ func (c *FeatureContext) compareResponseJSON(expected []byte, matchMode jsoncomp
 
 // theResponseShouldHaveFollowingHeaders asserts that given headers are present
 // in the response and that their values match the expectations.
-func (c *FeatureContext) theResponseShouldHaveFollowingHeaders(headers *gherkin.DataTable) error {
-	for _, h := range headers.Rows {
-		if len(h.Cells) != 2 {
-			return fmt.Errorf(
-				"expected header table row to have two columns (name, value), got %d",
-				len(h.Cells),
-			)
-		}
+func (c *FeatureContext) theResponseShouldHaveFollowingHeaders(table *gherkin.DataTable) error {
+	options := &datatable.Options{
+		RequiredFields: []string{"name"},
+		OptionalFields: []string{"value"},
+	}
 
-		name, value := h.Cells[0].Value, h.Cells[1].Value
+	header, err := datatable.FromGherkinWithOptions(options, table)
+	if err != nil {
+		return err
+	}
+
+	for _, h := range header.Rows() {
+		name := h["name"]
 
 		if header, ok := c.resp.Header()[name]; !ok || len(header) == 0 {
 			return fmt.Errorf("header %q missing", name)
-		} else if header[0] != value {
+		} else if value, ok := h["value"]; ok && header[0] != value {
 			return fmt.Errorf("expected value %q for header %q, got %q", value, name, header[0])
+		}
+	}
+
+	return nil
+}
+
+func (c *FeatureContext) theResponseShouldHaveFollowingCookies(table *gherkin.DataTable) error {
+	options := &datatable.Options{
+		RequiredFields: []string{"name"},
+		OptionalFields: []string{"value"},
+	}
+
+	cookies, err := datatable.FromGherkinWithOptions(options, table)
+	if err != nil {
+		return err
+	}
+
+	rcookies := c.resp.Result().Cookies()
+
+	for _, cookieParams := range cookies.Rows() {
+		var found bool
+		for _, rcookie := range rcookies {
+			name := cookieParams["name"]
+			if name != rcookie.Name {
+				continue
+			}
+
+			if value, ok := cookieParams["value"]; ok && value != rcookie.Value {
+				return fmt.Errorf("wrong value for cookie %q, got %q, want %q", name, value, rcookie.Value)
+			}
+
+			found = true
+			break
+		}
+
+		if !found {
+			return fmt.Errorf("%q not found", cookieParams["name"])
 		}
 	}
 
@@ -175,6 +253,7 @@ func (c *FeatureContext) Register(s *godog.Suite) {
 	// Given
 	s.Step(`^I have following request headers:$`, c.iHaveFollowingRequestHeaders)
 	s.Step(`^I have following request body:$`, c.iHaveFollowingRequestBody)
+	s.Step(`^I have following request cookies:$`, c.iHaveFollowingRequestCookies)
 
 	// When
 	s.Step(`^I send "(OPTIONS|GET|HEAD|POST|PUT|DELETE|TRACE|CONNECT)" request to "([^"]*)"$`, c.iSendRequestTo)
@@ -186,4 +265,5 @@ func (c *FeatureContext) Register(s *godog.Suite) {
 	s.Step(`^the response should contain following json:$`, c.theResponseShouldContainFollowingJSON)
 	s.Step(`^the response should contain following json subtree:$`, c.theResponseShouldContainFollowingJSONSubtree)
 	s.Step(`^the response should have following headers:$`, c.theResponseShouldHaveFollowingHeaders)
+	s.Step(`^the response should have following cookies:$`, c.theResponseShouldHaveFollowingCookies)
 }
