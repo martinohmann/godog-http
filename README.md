@@ -27,6 +27,7 @@ Feature: As a developer, I want to be able to setup and verify http routers in
   Scenario: I make a JSON request
 
     Given I have following request headers:
+      | name   | value       |
       | X-Auth | supersecret |
     And I have following request body:
       """
@@ -39,6 +40,7 @@ Feature: As a developer, I want to be able to setup and verify http routers in
       {"something":"else","foo":{"bar":{"baz":1}}}
       """
     And the response should have following headers:
+      | name         | value            |
       | Content-Type | application/json |
 ```
 
